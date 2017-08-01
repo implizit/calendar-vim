@@ -32,6 +32,13 @@ calendar.vim makes the following commands available:
                           year.  When both [year] and [month] are omitted, the
                           calendar will show the current month.
 
+                                                *calendar-:CalendarVR* 
+:CalendarVR [[year] month]  Show calendar at this year and this month in a
+                          vertical split at the right site.  When [year] is
+                          omitted, the calendar will show the given month in
+                          the current year.  When both [year] and [month] are
+                          omitted, the calendar will show the current month.
+
 MAPPINGS                                        *calendar-mappings*
 
 calendar.vim makes the following normal mode mappings available:
@@ -76,6 +83,11 @@ Place a '*' or '+' mark after the day.  Acceptable values are 'left',
   let g:calendar_mark = 'right'
 <
 
+                                                *g:calendar_diary*
+Specify the directory for the diary files.  The default value is $HOME/diary.
+  let g:calendar_diary=$HOME.'/.vim/diary'
+
+
                                                 *g:calendar_navi*
 To control the calendar navigator, set this variable.  Acceptable values are
 'top', 'bottom', or 'both'. >
@@ -98,7 +110,7 @@ example, to use the current Japanese era (Heisei), you would set: >
                                                 *g:calendar_mruler*
 To change the month names for the calendar headings, set this variable.  The
 value is expected to be a comma-separated list of twelve values, starting with
-Janurary: >
+January: >
   let g:calendar_mruler = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'
 <
 
@@ -129,6 +141,17 @@ To show the week number, set this variable.  There are four valid settings: >
 To control display of the current date and time, set this variable.
 Acceptable values are 'title', 'statusline', and '': >
   let g:calendar_datetime = 'title'
+<
+                                                *g:calendar_filetype*
+To control the filetype of calendar entries, set this variable. It defaults to
+'markdown'. Acceptable values are values that are acceptable for |filetype|
+like e.g. 'markdown' or 'pandoc':
+  let g:calendar_filetype = 'pandoc'
+
+                                                *g:calendar_number_of_months*
+To control the number of months per view, set this variable. The default value
+is 3. >
+  let g:calendar_number_of_months = 5
 <
 
 HOOKS                                           *calendar-hooks*

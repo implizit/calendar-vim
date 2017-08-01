@@ -38,6 +38,12 @@ if !exists("g:calendar_options")
     let g:calendar_options .= " nornu"
   endif
 endif
+if !exists("g:calendar_filetype")
+  let g:calendar_filetype = "markdown"
+endif
+if !exists("g:calendar_diary_extension")
+    let g:calendar_diary_extension = ".md"
+endif
 
 "*****************************************************************
 "* Default Calendar key bindings
@@ -124,7 +130,7 @@ function! calendar#action(...)
     return
   endif
 
-  if b:CalendarDir == 0
+  if b:CalendarDir == 0 || b:CalendarDir == 3
     let dir = 'V'
     let cnr = 1
     let week = ((col(".")+1) / 3) - 1
@@ -329,7 +335,7 @@ function! calendar#show(...)
     let fridaycol = (strlen(whitehrz) + 3) * 5 + strlen(whiteleft) + 1
     let saturdaycol = (strlen(whitehrz) + 3) * 6 + strlen(whiteleft) + 1
   else
-    let vmcntmax = 3
+    let vmcntmax = get(g:, 'calendar_number_of_months', 3)
   endif
   while vmcnt < vmcntmax
     let vcolumn = 22
@@ -713,8 +719,8 @@ function! calendar#show(...)
       endwhile
       let vdisplay1 = vstrline
       let vheight = vtokline-1
-    elseif dir == 0
-      " for virtical
+    elseif (dir == 0 || dir == 3)
+      " for vertical
       "--------------------------------------------------------------
       " +---+   +---+   +---+
       " | 1 | + | 2 | = |   |
@@ -818,7 +824,7 @@ function! calendar#show(...)
     " make title
     if g:calendar_datetime == "title" && (!exists('s:bufautocommandsset'))
       auto BufEnter *Calendar let b:sav_titlestring = &titlestring | let &titlestring = '%{strftime("%c")}'
-      auto BufLeave *Calendar let &titlestring = b:sav_titlestring
+      auto BufLeave *Calendar if exists('b:sav_titlestring') | let &titlestring = b:sav_titlestring | endif
       let s:bufautocommandsset = 1
     endif
 
@@ -836,6 +842,9 @@ function! calendar#show(...)
       setlocal winfixheight
     elseif dir == 0
       silent execute 'to '.vcolumn.'vsplit __Calendar'
+      setlocal winfixwidth
+    elseif dir == 3
+      silent execute 'bo '.vcolumn.'vsplit __Calendar'
       setlocal winfixwidth
     elseif bufname('%') == '' && &l:modified == 0
       silent execute 'edit __Calendar'
@@ -880,7 +889,7 @@ function! calendar#show(...)
         \.get(split(g:calendar_navi_label, ','), 2, '').'>'
     if dir == 1
       let navcol = vcolumn + (vcolumn-strlen(navi_label)+2)/2
-    elseif dir == 0
+    elseif (dir == 0 ||dir == 3)
       let navcol = (vcolumn-strlen(navi_label)+2)/2
     else
       let navcol = (width - strlen(navi_label)) / 2
@@ -952,7 +961,7 @@ function! calendar#show(...)
     if dir == 1
       syn match CalSaturday display /|.\{15}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
       syn match CalSunday display /|.\{18}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
-    elseif dir == 0
+    elseif (dir == 0|| dir == 3)
       syn match CalSaturday display /^.\{15}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
       syn match CalSunday display /^.\{18}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
     else
@@ -963,7 +972,7 @@ function! calendar#show(...)
     if dir == 1
       syn match CalSaturday display /|.\{18}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
       syn match CalSunday display /|\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
-    elseif dir == 0
+    elseif (dir == 0 || dir == 3)
       syn match CalSaturday display /^.\{18}\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
       syn match CalSunday display /^\s\([0-9\ ]\d\)/hs=e-1 contains=ALL
     else
@@ -1042,13 +1051,14 @@ function! calendar#diary(day, month, year, week, dir)
       return
     endif
   endif
-  let sfile = expand(sfile) . "/" . printf("%02d", a:day) . ".md"
+  let sfile = expand(sfile) . "/" . printf("%02d", a:day) . g:calendar_diary_extension
   let sfile = substitute(sfile, ' ', '\\ ', 'g')
   let vbufnr = bufnr('__Calendar')
 
   " load the file
   exe "wincmd w"
   exe "edit  " . sfile
+  exe "setfiletype " . g:calendar_filetype
   let dir = getbufvar(vbufnr, "CalendarDir")
   let vyear = getbufvar(vbufnr, "CalendarYear")
   let vmnth = getbufvar(vbufnr, "CalendarMonth")
